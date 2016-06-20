@@ -1,3 +1,11 @@
+/*
+ * kognijs-rsb
+ * https://github.com/aleneum/kognijs-rsb
+ *
+ * Copyright (c) 2016 Alexander Neumann
+ * Licensed under the MIT license.
+ */
+
 var autobahn = require("autobahn");
 var ProtoBuf = require("protobufjs");
 
