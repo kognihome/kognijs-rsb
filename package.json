@@ -1,10 +1,10 @@
 {
-  "name": "kognijs.rsb",
+  "name": "kognijs-rsb",
   "version": "0.1.0",
   "description": "KogniHome Web Toolkit",
-  "main": "redist/kognis.rsb-0.1.0.min.js",
+  "main": "src/rsb.js",
   "files": [
-      "src/*.js"
+      "src/rsb.js"
   ],
   "dependencies": {
     "autobahn":"<0.13.0",
