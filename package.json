@@ -1,0 +1,23 @@
+{
+  "name": "kognijs.rsb",
+  "version": "0.1.0",
+  "description": "KogniHome Web Toolkit",
+  "main": "redist/kognis.rsb-0.1.0.min.js",
+  "files": [
+      "src/*.js"
+  ],
+  "dependencies": {
+    "autobahn":"<0.13.0",
+    "protobufjs":"*"
+  },
+  "devDependencies": {
+    "browser-sync": "*",
+    "browserify": "*",
+    "lodash": "*",
+    "gulp": "*",
+    "gulp-uglify": "*",
+    "resolve": "*",
+    "vinyl-source-stream": "*",
+    "vinyl-buffer": "*"
+  }
+}

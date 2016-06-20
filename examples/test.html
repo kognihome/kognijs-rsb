@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Kogni.JS - RSB</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="../redist/kognijs.rsb-0.1.0.min.js"></script>
+</head>
+<script type="text/javascript">
+  window.onload = function() {
+    window.rsb = new KogniJS.RSB();
+    rsb.connect('localhost:8181', function() {
+      console.log('connected!');
+    });
+  }
+</script>
+<body>
+  <h1>This is just a test page</h1>
+</body>
+</html>

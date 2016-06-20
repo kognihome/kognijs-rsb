@@ -1,0 +1,13 @@
+{
+  "name": "kognijs.rsb",
+  "version": "0.1.0",
+  "description": "KogniHome Web Toolkit",
+  "main": [
+      "redist/kognijs.rsb-0.1.0.min.js"
+  ],
+  "ignore": [
+    "node_modules",
+    "bower_components",
+    "examples"
+  ]
+}

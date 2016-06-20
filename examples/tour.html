@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Kogni.JS - RSB</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="styles/tour.css">
+  <script src="https://code.jquery.com/jquery-3.0.0.min.js"
+          integrity="sha256-JmvOoLtYsmqlsWxa7mDSLMwa6dZ9rrIdtrrVYRnDRH0="
+          crossorigin="anonymous"></script>
+  <script src="vendor.js"></script>
+  <script src="kogni.rsb.js"></script>
+</head>
+
+<xmp theme="united" style="display:none;">
+### Prerequisite
+
+Initialize all required objects:
+
+```
+var RSB = require("kognijs.rsb");
+var rsb = new RSB();
+// url to websocket (default is localhost:8181)
+rsb.connect(url, function() {
+  // is called when the connection was established
+  // do your rsb stuff here
+});
+```
+Also make sure that your ```crossbar``` and ```asyncio-rsb-bridge``` are running.
+You can execute ```run_displayserver.sh``` to boot both.
+
+<div id="rsbIsConnected">
+  <div style="color:red; font-size: 1.5em; margin-bottom:5px;">RSB is not connected!</div>
+  If you have no valid configuration, you can use the following minimal example and save it as ```screen.xml```
+  in your server's data folder. You can change the location according to your needs.
+  The convenience wrapper for this tour has the location hard coded though.
+</div>
+
+### Listen to RSB
+
+Scopes can be set as strings like in any other implementation of RSB.
+Possible types are native types such as RSB.STRING, RSB.INTEGER, RSB.FLOAT (or RSB.DOUBLE)
+or RST types like "rst.generic.Value". The callback value is either a js native type or an
+object representing the Protocol Buffer derived from RST.
+
+```
+// listen to primitive type
+rsb.createListener({
+  scope: "/rsb/web/tour/string",
+  type: RSB.STRING,
+  callback: function(value) {
+    console.log(value)
+  }
+});
+
+// listen to RST type
+rsb.createListener({
+  scope: "/rst/generic/value",
+  type: "rst.generic.Value",
+  callback: function(value) {
+    console.log(value)
+  }
+});
+```
+<div id="stringlistener" style="background-color:#efe; padding: 5px 10px; overflow:auto; height: 100px; width:100%">
+Send strings to /rsb/web/tour/string from your favourite RSB implementation!<br>
+They will show up here:<br>
+</div>
+
+### Publish Messages
+While listening is handled by the global rsb instance, publishers have to be handled manually.
+This design decision allows a more flexible and also familiar way of sending messages.
+```
+var pub = rsb.createInformer({
+  scope: "/rsb/web/tour/keyvaluepair",
+  type: "rst.generic.KeyValuePair",
+  callback: function() {
+    pub.publish({
+      key:"foo",
+      value: {type: 4, string: 'bar'}
+    })
+  }
+});
+```
+This looks a bit confusing because we have a return value AND a callback.
+The method ```createInfomer``` returns a ```RSBInformer``` synchronously but the scope registration
+happens asynchronously. If you plan to use your informer right away you can stick to the code above
+and use the callback which is called _once_ the scope is registered.
+If you just want to create an informer callback can also be an empty method.
+
+<div style="width:100%; height: 25px; padding: 10px 10px; background-color:#efe;">
+  Check the scope _/rsb/web/tour/keyvaluepair_ ! You should receive a _KeyValuePair_ every second.
+</div>
+
+### Developer Tools
+
+Sometimes you want to check if the connection still works. You can use ```createPingPong```
+to debug the WAMP connection if you experience errors:
+
+```
+rsb.createPingPong();
+```
+Every client that calls this method will answer to the server's _ping_. Having 3 clients should
+cause the following output from the server if pinging is enabled (default behaviour) :
+
+```bash
+ping
+pong
+pong
+pong
+ping
+...
+```
+
+</xmp>
+
+<script src="http://strapdownjs.com/v/0.2/strapdown.js"></script>
+<script type="text/javascript">
+  window.onload = function() {
+    var rsb = new KogniJS.RSB();
+    rsb.connect('localhost:8181', function() {
+      var rsbStatus = $("#rsbIsConnected");
+      rsbStatus.remove();
+      // listener example
+      rsb.createListener({
+        scope: "/rsb/web/tour/string",
+        type: "string",
+        callback: function(value) {
+          $("#stringlistener").append(value+"<br>");
+        }
+      });
+
+      // publisher example
+      var pub = rsb.createInformer({
+        scope: "/rsb/web/tour/keyvaluepair",
+        type: "rst.generic.KeyValuePair",
+        callback: function() {
+          setInterval(function(){
+            pub.publish({
+              key:"foo",
+              value: {type: 4, string: 'bar'}
+            });
+          }, 1000);
+        }
+      });
+      /// create ping pong
+      rsb.createPingPong();
+    })
+  }
+</script>
+</html>
