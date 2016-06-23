@@ -8,7 +8,7 @@ web version of the Robotic Service Bus ([RSB](https://code.cor-lab.org/projects/
 ### Requirements
 
 To work with WAMP, a server is needed such as [crossbar](http://crossbar.io/) which does understand the protocol.
-If you want to connecto to an RSB network you will need the [kogniserver](https://github.com/aleneum/kogniserver) which builds upon crossbar.
+If you want to connect to an RSB network you will need the [kogniserver](https://github.com/aleneum/kogniserver) which builds upon crossbar.
 
 ## Getting Started
 
@@ -53,10 +53,13 @@ Make sure that your ```crossbar``` and ```kogniserver``` are running.
 
 ### Connect to the server
 
+Connect to the server. `url` could be `localhost:8181` for instance. The callback method is called when the connection is established and Listeners and Informers can be created.
+
 ```javascript
 rsb.connect(url, function() {
   // is called when the connection was established
   // do your rsb stuff here
+  // create as much listeners and informers as you like
 });
 ```
 
@@ -110,3 +113,18 @@ The method ```createInfomer``` returns a ```RSBInformer``` synchronously but the
 happens asynchronously. If you plan to use your informer right away you can stick to the code above
 and use the callback which is called _once_ the scope is registered.
 If you just want to create an informer callback can also be an empty method.
+
+
+## Interactive Demo
+
+An interactive demo can be started with npm and gulp:
+
+```bash
+git clone https://github.com/aleneum/kognijs-rsb.git kognijs-rsb
+cd kognijs-rsb
+npm install -g gulp # if you havent done already
+npm install
+gulp serve
+```
+
+A browser window should open to `localhost:3000` with an interactive tour.

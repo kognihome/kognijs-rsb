@@ -9,7 +9,11 @@
 var autobahn = require("autobahn");
 var ProtoBuf = require("protobufjs");
 
-function RSB() {
+// rstFolders (optional)
+function RSB(params) {
+  var params = params || {};
+  //var rstFolders = params.rstFolders || [];
+  //rstFolders = (Array.isArray(rstFolders) ? rstFolders : [rstFolders]);
   this.wasConnected = false;
   this.wsuri = undefined;
   this.connection = undefined;
@@ -33,11 +37,22 @@ RSB.createProto = function(protoUrl) {
   var idx = path.lastIndexOf('/') + 1;
   var proto;
   try {
-      var fp = {root:" ", file: path + ".proto"};
-      proto = ProtoBuf.loadProtoFile(fp);
-      proto = proto.build(protoUrl);
+    var fp = {root:"/proto", file: path + ".proto"};
+
+    proto = ProtoBuf.loadProtoFile(fp);
+    // RST proto files are provided in $prefix/share/rst$VERSION/proto
+    // in two separate folders named 'sandbox' and 'stable'.
+    if (! proto) {
+      var sandbox_fp = {root: fp.root + '/sandbox', file: fp.file};
+      proto = ProtoBuf.loadProtoFile(sandbox_fp);
+      if (! proto) {
+        var stable_fp = {root: fp.root + '/stable', file: fp.file};
+        proto = ProtoBuf.loadProtoFile(stable_fp);
+      }
+    }
+    proto = proto.build(protoUrl);
   } catch(e) {
-      console.error('cannot load protofile', e);
+    console.error('cannot load protofile', e);
   }
   return proto;
 };
@@ -64,7 +79,7 @@ RSB.prototype.connect = function(url, callback) {
     this.wsuri = "ws://127.0.0.1:8080/ws";
   } else {
     this.wsuri = (document.location.protocol === "http:" ? "ws:" : "wss:") + "//" +
-                  document.location.host + "/ws";
+      document.location.host + "/ws";
   }
 
   this.connection = new autobahn.Connection({
@@ -135,21 +150,21 @@ RSB.prototype.createListener = function createListener(params) {
   }
 
   this.wamp.subscribe(wampScope, cb).then(
-      function (sub) {
-          console.log('subscribed to topic', sub);
-      },
-      function (err) {
-          console.log('failed to subscribe to topic', err);
-      }
+    function (sub) {
+      console.log('subscribed to topic', sub);
+    },
+    function (err) {
+      console.log('failed to subscribe to topic', err);
+    }
   );
   this.wamp.call('service.displayserver.register',
     [params.scope, params.type]).then(
-      function (res) {
-          console.log("registerListener() result:", res);
-      },
-      function (err) {
-          console.log("registerListener() error:", err);
-      }
+    function (res) {
+      console.log("registerListener() result:", res);
+    },
+    function (err) {
+      console.log("registerListener() error:", err);
+    }
   );
 };
 
@@ -179,15 +194,15 @@ function RSBInformer(params) {
     };
   }
   this.rsb.wamp.call('service.displayserver.register',
-  [params.scope, params.type]).then(
+    [params.scope, params.type]).then(
     function (res) {
-        console.log("registerInformer() result:", res);
-        if (params.callback) {
-            params.callback();
-        }
+      console.log("registerInformer() result:", res);
+      if (params.callback) {
+        params.callback();
+      }
     },
     function (err) {
-        console.log("registerInformer() error:", err);
+      console.log("registerInformer() error:", err);
     }
   );
 }
@@ -201,10 +216,10 @@ RSB.prototype.showEvents = function(scope) {
     console.log(args);
   }).then(
     function (sub) {
-        console.log('subscribed to topic', sub);
+      console.log('subscribed to topic', sub);
     },
     function (err) {
-        console.log('failed to subscribe to topic', err);
+      console.log('failed to subscribe to topic', err);
     }
   );
 };

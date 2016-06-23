@@ -7,9 +7,7 @@
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="styles/tour.css">
-  <script src="https://code.jquery.com/jquery-3.0.0.min.js"
-          integrity="sha256-JmvOoLtYsmqlsWxa7mDSLMwa6dZ9rrIdtrrVYRnDRH0="
-          crossorigin="anonymous"></script>
+  <script src="/redist/jquery-3.0.0.min.js"></script>
   <script src="vendor.js"></script>
   <script src="kogni.rsb.js"></script>
 </head>
@@ -17,10 +15,10 @@
 <xmp theme="united" style="display:none;">
 ### Prerequisite
 
-Initialize all required objects:
+Connect to the server. `url` could be `localhost:8181` for instance. The callback method is called when the connection is established and Listeners and Informers can be created.
 
 ```
-var RSB = require("kognijs.rsb");
+var RSB = require("kognijs-rsb");
 var rsb = new RSB();
 // url to websocket (default is localhost:8181)
 rsb.connect(url, function() {
@@ -28,8 +26,7 @@ rsb.connect(url, function() {
   // do your rsb stuff here
 });
 ```
-Also make sure that your ```crossbar``` and ```asyncio-rsb-bridge``` are running.
-You can execute ```run_displayserver.sh``` to boot both.
+Also make sure that your ```crossbar``` and ```kogniserver``` are running.
 
 <div id="rsbIsConnected">
   <div style="color:red; font-size: 1.5em; margin-bottom:5px;">RSB is not connected!</div>
@@ -120,7 +117,9 @@ ping
 <script type="text/javascript">
   window.onload = function() {
     var rsb = new KogniJS.RSB();
+    window.rsb = rsb;
     rsb.connect('localhost:8181', function() {
+      if (! rsb.isConnected()) {return;}
       var rsbStatus = $("#rsbIsConnected");
       rsbStatus.remove();
       // listener example
