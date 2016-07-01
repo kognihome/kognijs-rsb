@@ -29,7 +29,7 @@ gulp.task('build-redist', function() {
         debug: !production,
       })
       .bundle()
-      .pipe(source('kognijs.rsb-'+pjson.version+'.min.js'))
+      .pipe(source('kognijs.rsb.min.js'))
       .pipe(buffer())
       .pipe(uglify())
       .pipe(gulp.dest('redist/'));

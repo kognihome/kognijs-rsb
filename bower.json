@@ -3,7 +3,7 @@
   "version": "0.1.1",
   "description": "KogniHome Web Toolkit",
   "main": [
-      "redist/kognijs.rsb-0.1.1.min.js"
+      "redist/kognijs.rsb.min.js"
   ],
   "ignore": [
     "node_modules",
