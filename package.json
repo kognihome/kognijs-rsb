@@ -1,6 +1,6 @@
 {
   "name": "kognijs-rsb",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "KogniHome Web Toolkit",
   "main": "src/rsb.js",
   "files": [
