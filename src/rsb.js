@@ -230,8 +230,11 @@ RSB.prototype.createInformer = function createInformer(params) {
     console.log('not connected. skipping...')
     return null;
   }
-  return new RSBInformer({rsb:this, scope:params.scope, type:params.type,
-    callback:params.callback,});
+  return new RSBInformer({
+    rsb:this, scope:params.scope,
+    type:params.type,
+    callback:params.callback,
+  });
 };
 
 RSB.prototype.isConnected = function() {

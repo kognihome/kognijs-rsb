@@ -7,7 +7,6 @@
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="styles/tour.css">
-  <script src="/redist/jquery-3.0.0.min.js"></script>
   <script src="vendor.js"></script>
   <script src="kogni.rsb.js"></script>
 </head>
@@ -99,6 +98,7 @@ to debug the WAMP connection if you experience errors:
 ```
 rsb.createPingPong();
 ```
+
 Every client that calls this method will answer to the server's _ping_. Having 3 clients should
 cause the following output from the server if pinging is enabled (default behaviour) :
 
@@ -113,31 +113,32 @@ ping
 
 </xmp>
 
-<script src="http://strapdownjs.com/v/0.2/strapdown.js"></script>
+<script src="/redist/strapdown.js"></script>
 <script type="text/javascript">
   window.onload = function() {
     var rsb = new KogniJS.RSB();
     window.rsb = rsb;
     rsb.connect('localhost:8181', function() {
       if (! rsb.isConnected()) {return;}
-      var rsbStatus = $("#rsbIsConnected");
+      var rsbStatus = document.getElementById("rsbIsConnected");
       rsbStatus.remove();
       // listener example
       rsb.createListener({
         scope: "/rsb/web/tour/string",
         type: "string",
         callback: function(value) {
-          $("#stringlistener").append(value+"<br>");
+          console.log('incoming', value);
+          document.getElementById("stringlistener").insertAdjacentHTML('beforeend', value+"<br>");
         }
       });
 
       // publisher example
-      var pub = rsb.createInformer({
+      window.pub = rsb.createInformer({
         scope: "/rsb/web/tour/keyvaluepair",
         type: "rst.generic.KeyValuePair",
         callback: function() {
           setInterval(function(){
-            pub.publish({
+            window.pub.publish({
               key:"foo",
               value: {type: 4, string: 'bar'}
             });
