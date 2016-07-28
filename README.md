@@ -1,4 +1,4 @@
-# KogniJS - RSB
+# KogniJS - RSB [![Build Status](https://travis-ci.org/aleneum/kognijs-rsb.svg?branch=master)](https://travis-ci.org/aleneum/kognijs-rsb)
 
 Wraps the Web Application Messaging Protocol ([WAMP](http://wamp-proto.org/)) and Protocol Buffers into a
 web version of the Robotic Service Bus ([RSB](https://code.cor-lab.org/projects/rsb)). WAMP is kindly provided by
@@ -128,3 +128,5 @@ gulp serve
 ```
 
 A browser window should open to `localhost:3000` with an interactive tour.
+This demo requires a running [kogniserver](https://github.com/aleneum/kogniserver) instance.
+

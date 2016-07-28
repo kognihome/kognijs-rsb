@@ -10,6 +10,7 @@ var bowerResolve = require('bower-resolve');
 var nodeResolve = require('resolve');
 var browserSync = require('browser-sync');
 var pjson = require('./package.json');
+var mocha = require('gulp-mocha');
 var reload = browserSync.reload;
 
 var production = (process.env.NODE_ENV === 'production');
@@ -83,6 +84,12 @@ gulp.task('build-tour', function () {
 
   return stream;
 });
+
+gulp.task('test', function () {
+    return gulp.src(['tests/**/*.js'], { read: false })
+        .pipe(mocha({ reporter: 'spec' }))
+});
+
 
 function getNPMPackageIds() {
   var packageManifest = {};

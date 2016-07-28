@@ -209,7 +209,7 @@ function RSBInformer(params) {
 
 RSB.prototype.showEvents = function(scope) {
   if (! this.isConnected()) {
-    console.log('not connected. skipping...')
+    console.log('not connected. skipping...');
     return;
   }
   this.wamp.subscribe(scope, function(args) {
@@ -227,7 +227,7 @@ RSB.prototype.showEvents = function(scope) {
 // scope; type; callback
 RSB.prototype.createInformer = function createInformer(params) {
   if (! this.isConnected()) {
-    console.log('not connected. skipping...')
+    console.log('not connected. skipping...');
     return null;
   }
   return new RSBInformer({

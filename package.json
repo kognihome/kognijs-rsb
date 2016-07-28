@@ -18,6 +18,12 @@
     "gulp-uglify": "*",
     "resolve": "*",
     "vinyl-source-stream": "*",
-    "vinyl-buffer": "*"
+    "vinyl-buffer": "*",
+    "mocha": "*",
+    "chai": "*",
+    "sinon": "*",
+    "sinon-chai": "*",
+    "gulp-mocha": "*",
+    "bower-resolve": "*"
   }
 }
