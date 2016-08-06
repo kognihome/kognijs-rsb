@@ -1,4 +1,4 @@
-# KogniJS - RSB [![Build Status](https://travis-ci.org/aleneum/kognijs-rsb.svg?branch=master)](https://travis-ci.org/aleneum/kognijs-rsb)[![Coverage Status](https://coveralls.io/repos/github/aleneum/kognijs-rsb/badge.svg?branch=master)](https://coveralls.io/github/aleneum/kognijs-rsb?branch=master)
+# KogniJS - RSB [![Build Status](https://travis-ci.org/aleneum/kognijs-rsb.svg?branch=master)](https://travis-ci.org/aleneum/kognijs-rsb) [![Coverage Status](https://coveralls.io/repos/github/aleneum/kognijs-rsb/badge.svg?branch=master)](https://coveralls.io/github/aleneum/kognijs-rsb?branch=master)
 
 Wraps the Web Application Messaging Protocol ([WAMP](http://wamp-proto.org/)) and Protocol Buffers into a
 web version of the Robotic Service Bus ([RSB](https://code.cor-lab.org/projects/rsb)). WAMP is kindly provided by
