@@ -24,6 +24,9 @@
     "sinon": "*",
     "sinon-chai": "*",
     "gulp-mocha": "*",
-    "bower-resolve": "*"
+    "gulp-istanbul": "*",
+    "istanbul": "*",
+    "sinon-as-promised": "*",
+    "gulp-coveralls": "*"
   }
 }

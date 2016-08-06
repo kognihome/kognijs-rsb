@@ -6,12 +6,12 @@ var browserify = require('browserify');
 var uglify = require('gulp-uglify');
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
-var bowerResolve = require('bower-resolve');
 var nodeResolve = require('resolve');
 var browserSync = require('browser-sync');
-var pjson = require('./package.json');
 var mocha = require('gulp-mocha');
 var reload = browserSync.reload;
+var istanbul = require('gulp-istanbul');
+var coveralls = require('gulp-coveralls');
 
 var production = (process.env.NODE_ENV === 'production');
 
@@ -79,15 +79,31 @@ gulp.task('build-tour', function () {
     b.external(id);
   });
 
-  var stream = b.bundle().pipe(source('kogni.rsb.js'));
+  var stream = b.bundle().pipe(source('kogni.rsb.tour.js'));
   stream.pipe(gulp.dest('./dist'));
 
   return stream;
 });
 
-gulp.task('test', function () {
-    return gulp.src(['tests/**/*.js'], { read: false })
-        .pipe(mocha({ reporter: 'spec' }))
+gulp.task('pre-test', function () {
+  return gulp.src(['src/**/*.js'])
+    .pipe(istanbul({
+      dir: './coverage',
+      reporters: [ 'lcov', 'text-summary' ],
+      reportOpts: { dir: './coverage' },
+    }))
+    .pipe(istanbul.hookRequire());
+});
+
+gulp.task('test', ['pre-test'], function () {
+    return gulp.src(['test/**/*.spec.js'], { read: false })
+      .pipe(mocha({ reporter: 'spec' }))
+      .pipe(istanbul.writeReports())
+});
+
+gulp.task('test-travis', ['test'], function(){
+  return gulp.src('coverage/**/lcov.info')
+  .pipe(coveralls());
 });
 
 
