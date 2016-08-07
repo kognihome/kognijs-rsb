@@ -10,9 +10,9 @@ var autobahn = require('autobahn');
 chai.should();
 chai.use(sinonChai);
 
-var fakeSession;
+var wampMock;
 
-function FakeSession() {
+function WampMock() {
   this.isOpen = true;
   this.publishedMessages = {};
   this.subscribedScopes = {};
@@ -27,33 +27,33 @@ function FakeSession() {
 
 }
 
-FakeSession.prototype.getScopes = function() {
+WampMock.prototype.getScopes = function() {
   return Object.keys(this.subscribedScopes);
-}
+};
 
-FakeSession.prototype.subscribe = function(scope, callback) {
+WampMock.prototype.subscribe = function(scope, callback) {
   if (!(scope in this.subscribedScopes)) {this.subscribedScopes[scope] = []}
   this.subscribedScopes[scope].push(callback);
   return this.subscriptionResult();
 };
 
-FakeSession.prototype.publish = function(scope, arr) {
+WampMock.prototype.publish = function(scope, arr) {
   if (!(scope in this.publishedMessages)) {this.publishedMessages[scope] = []}
   this.publishedMessages[scope].push(arr)
 };
 
-FakeSession.prototype.call = function(scope, args) {
+WampMock.prototype.call = function(scope, args) {
   return this.rpcStub();
-}
+};
 
 
 describe('RSB', function() {
   beforeEach(function () {
     this.sinon = sinon.sandbox.create();
     global.document = {location: {protocol: ''}};
-    fakeSession = new FakeSession();
+    wampMock = new WampMock();
     this.sinon.stub(autobahn.Connection.prototype, 'open', function(){
-      this.onopen(fakeSession, 'connection stub');
+      this.onopen(wampMock, 'connection stub');
     });
   });
 
@@ -83,11 +83,11 @@ describe('RSB', function() {
   it('should createPingPong()', function(done) {
     var rsb = new RSB();
     rsb.createPingPong();
-    expect(fakeSession.getScopes()).to.have.length(0);
+    expect(wampMock.getScopes()).to.have.length(0);
     rsb.connect(undefined, function(){
       rsb.createPingPong();
-      expect(fakeSession.getScopes()).to.have.length(1);
-      expect("com.wamp.ping" in fakeSession.subscribedScopes).to.be.true;
+      expect(wampMock.getScopes()).to.have.length(1);
+      expect("com.wamp.ping" in wampMock.subscribedScopes).to.be.true;
       done();
     });
   });
@@ -96,11 +96,11 @@ describe('RSB', function() {
     var rsb = new RSB();
     var params = {scope:'/foo/bar', type:RSB.STRING, callback: function(val){}};
     rsb.createListener(params);
-    expect(fakeSession.getScopes()).to.have.length(0);
+    expect(wampMock.getScopes()).to.have.length(0);
     rsb.connect(undefined, function() {
       rsb.createListener(params);
-      expect(fakeSession.getScopes()).to.have.length(1);
-      expect("foo.bar" in fakeSession.subscribedScopes).to.be.true;
+      expect(wampMock.getScopes()).to.have.length(1);
+      expect("foo.bar" in wampMock.subscribedScopes).to.be.true;
       done();
     });
   });
