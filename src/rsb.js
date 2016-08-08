@@ -111,61 +111,50 @@ RSB.prototype.connect = function(url, callback) {
 
 RSB.prototype.createPingPong = function() {
   if (! this.isConnected()) {
-    console.log('not connected. skipping...')
-    return;
+    throw Error('WAMP/RSB connection is not established!');
   }
   var w = this.wamp;
-  w.subscribe("com.wamp.ping", function(args) {
-    //console.log('received ping')
-    w.publish("com.wamp.ping", ["pong"]);
-    //console.log('sent pong')
+  return w.subscribe("com.wamp.ping", function(args) {
+    // only answer to ping
+    if (args.indexOf("ping") > -1) {
+      w.publish("com.wamp.ping", ["pong"]);
+    }
   });
 };
 
 // params scope; type; callback
 RSB.prototype.createListener = function createListener(params) {
   if (! this.isConnected()) {
-    console.log('not connected. skipping...');
-    return;
+    throw Error('WAMP/RSB connection is not established!');
   }
   // TODO: check params
-  var wampScope = params.scope.substring(1,params.scope.length).replace(/\//g,'.');
-  var cb;
 
-  if ((RSB.SIMPLE_TYPES.indexOf(params.type) == -1)) {
-    var p = RSB.createProto(params.type);
-    cb =  function(args) {
-      try {
-        var payload = args[0];
-        var dataOut = p.decode64(payload.substring(1));
-        params.callback(dataOut);
-      } catch(err) {
-        console.log("Error on scope", wampScope, err)
+  var _this = this;
+  return new Promise( function (resolve, reject) {
+    var wampScope = params.scope.substring(1,params.scope.length).replace(/\//g,'.');
+    var cb;
+    if ((RSB.SIMPLE_TYPES.indexOf(params.type) == -1)) {
+      var p = RSB.createProto(params.type);
+      cb =  function(args) {
+        try {
+          var payload = args[0];
+          var dataOut = p.decode64(payload.substring(1));
+          params.callback(dataOut);
+        } catch(err) {
+          console.log("Error on scope", wampScope, err)
+        }
       }
+    } else {
+      cb = function(args) {
+        params.callback(args[0]);
+      };
     }
-  } else {
-    cb = function(args) {
-      params.callback(args[0]);
-    };
-  }
 
-  this.wamp.subscribe(wampScope, cb).then(
-    function (sub) {
-      console.log('subscribed to topic', sub);
-    },
-    function (err) {
-      console.log('failed to subscribe to topic', err);
-    }
-  );
-  this.wamp.call('service.displayserver.register',
-    [params.scope, params.type]).then(
-    function (res) {
-      console.log("registerListener() result:", res);
-    },
-    function (err) {
-      console.log("registerListener() error:", err);
-    }
-  );
+    Promise.all([
+      _this.wamp.subscribe(wampScope, cb),
+      _this.wamp.call('service.displayserver.register', [params.scope, params.type])]
+    ).then(function(res){resolve(res)}, function(err){reject(err)});
+  });
 };
 
 // params rsb; scope; type; callback
@@ -193,42 +182,26 @@ function RSBInformer(params) {
       this.rsb.wamp.publish(this.wampScope, [msg]);
     };
   }
+
   this.rsb.wamp.call('service.displayserver.register',
     [params.scope, params.type]).then(
     function (res) {
-      console.log("registerInformer() result:", res);
       if (params.callback) {
-        params.callback();
+        params.callback(undefined, res, this);
       }
     },
     function (err) {
-      console.log("registerInformer() error:", err);
+      if (params.callback) {
+        params.callback(err, undefined, this);
+      }
     }
   );
 }
 
-RSB.prototype.showEvents = function(scope) {
-  if (! this.isConnected()) {
-    console.log('not connected. skipping...');
-    return;
-  }
-  this.wamp.subscribe(scope, function(args) {
-    console.log(args);
-  }).then(
-    function (sub) {
-      console.log('subscribed to topic', sub);
-    },
-    function (err) {
-      console.log('failed to subscribe to topic', err);
-    }
-  );
-};
-
 // scope; type; callback
 RSB.prototype.createInformer = function createInformer(params) {
   if (! this.isConnected()) {
-    console.log('not connected. skipping...');
-    return null;
+    throw Error('WAMP/RSB connection is not established!');
   }
   return new RSBInformer({
     rsb:this, scope:params.scope,
