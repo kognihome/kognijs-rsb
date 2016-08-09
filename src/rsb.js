@@ -183,16 +183,17 @@ function RSBInformer(params) {
     };
   }
 
+  var _this = this;
   this.rsb.wamp.call('service.displayserver.register',
     [params.scope, params.type]).then(
     function (res) {
       if (params.callback) {
-        params.callback(undefined, res, this);
+        params.callback(undefined, res, _this);
       }
     },
     function (err) {
       if (params.callback) {
-        params.callback(err, undefined, this);
+        params.callback(err, undefined, _this);
       }
     }
   );

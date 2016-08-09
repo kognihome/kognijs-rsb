@@ -34,17 +34,14 @@ WampMock.prototype.getScopes = function() {
 };
 
 WampMock.prototype.subscribe = function(scope, callback) {
-  if (this.subscriptionResult.called) {
-    if (!(scope in this.subscribedScopes)) {this.subscribedScopes[scope] = []}
-    this.subscribedScopes[scope].push(callback);
-  }
+  if (!(scope in this.subscribedScopes)) {this.subscribedScopes[scope] = []}
+  this.subscribedScopes[scope].push(callback);
   return this.subscriptionResult();
 };
 
 WampMock.prototype.publish = function(scope, arr) {
   if (!(scope in this.publishedMessages)) {this.publishedMessages[scope] = []}
   this.publishedMessages[scope].push(arr);
-  console.log(this.subscribedScopes)
   if (scope in this.subscribedScopes) {
     for (var i = 0; i < this.subscribedScopes[scope].length; ++i) {
       this.subscribedScopes[scope][i](arr);
@@ -210,31 +207,118 @@ describe('RSB', function() {
     expect(function(){RSB.getDefault('rst.generic.Value')}).to.throw(Error);
   });
 
-  // it('should receive a simple message', function (done) {
-  //   var rsb = new RSB();
-  //   rsb.connect(undefined, function(){
-  //     var inf = rsb.createInformer({
-  //       scope: '/foo/bar',
-  //       type: RSB.STRING,
-  //       callback: function(err, res) {
-  //         if (err) {return done(err)}
-  //         rsb.createListener({
-  //           scope: '/foo/bar',
-  //           type: RSB.STRING,
-  //           callback: function(val) {
-  //             expect(val).to.be.equal('hello');
-  //             done();
-  //           }
-  //         }).then(
-  //           function(res) {
-  //             expect(wampMock.getScopes()).to.have.length(1);
-  //             inf.publish('hello')
-  //           },
-  //           function(err) {done(err)}
-  //         )
-  //       }
-  //     })
-  //   });
-  // });
+  it('should receive a simple message', function (done) {
+    var rsb = new RSB();
+    rsb.connect(undefined, function(){
+      var inf = rsb.createInformer({
+        scope: '/foo/bar',
+        type: RSB.STRING,
+        callback: function(err, res) {
+          if (err) {return done(err)}
+          rsb.createListener({
+            scope: '/foo/bar',
+            type: RSB.STRING,
+            callback: function(val) {
+              expect(val).to.be.equal('hello');
+              done();
+            }
+          }).then(
+            function(res) {
+              expect(wampMock.getScopes()).to.have.length(1);
+              inf.publish('hello')
+            },
+            function(err) {done(err)}
+          )
+        }
+      })
+    });
+  });
+
+  it('should receive a Value proto message', function (done) {
+    var protoStub = this.sinon.stub(ProtoBuf, 'loadProtoFile', function(fp){
+      return ProtoBuf.loadProto(ValueProto);
+    });
+    var rsb = new RSB();
+    rsb.connect(undefined, function(){
+      var inf = rsb.createInformer({
+        scope: '/foo/bar',
+        type: 'rst.generic.Value',
+        callback: function(err, res) {
+          if (err) {return done(err)}
+          rsb.createListener({
+            scope: '/foo/bar',
+            type: 'rst.generic.Value',
+            callback: function(val) {
+              expect(val.string).to.be.equal('hello');
+              done();
+            }
+          }).then(
+            function(res) {
+              expect(wampMock.getScopes()).to.have.length(1);
+              inf.publish({type:4, string: "hello"})
+            },
+            function(err) {done(err)}
+          )
+        }
+      })
+    });
+  });
+
+  it('should block publishing', function(done) {
+    var protoStub = this.sinon.stub(ProtoBuf, 'loadProtoFile', function(fp){
+      return ProtoBuf.loadProto(ValueProto);
+    });
+    var rsb = new RSB();
+    rsb.connect(undefined, function() {
+      rsb.createInformer({
+        scope: "/foo/bar",
+        type: RSB.STRING,
+        callback: function(err, res, inf) {
+          inf.block = true;
+          console.log('foo');
+          inf.publish('foo');
+          console.log('foo');
+          expect('foo.bar' in wampMock.publishedMessages).to.be.false;
+          expect(inf.block).to.be.false;
+          console.log('foo')
+          rsb.createInformer({
+            scope: "/foo/bar",
+            type: 'rst.generic.Value',
+            callback: function(err, res, inf) {
+              inf.block = true;
+              inf.publish({type:4, string: 'hello'});
+              expect('foo.bar' in wampMock.publishedMessages).to.be.false;
+              expect(inf.block).to.be.false;
+              done();
+            }
+          });
+        }
+      })
+    });
+  })
+
+  it('should not call listener callback due to wrong data', function(done){
+    var rsb = new RSB();
+    rsb.connect(undefined, function() {
+      rsb.createListener({
+        scope: '/foo/bar',
+        type: 'rst.generic.Value',
+        callback: function(val) {
+          done(Error('received false callback!'));
+        }
+      })
+        .then(function(res) {
+          rsb.createInformer({
+            scope: '/foo/bar',
+            type: RSB.STRING,
+            callback: function(err, res, inf) {
+              inf.publish('hello');
+              done();
+            }
+          })
+        });
+    })
+
+  });
 });
 
