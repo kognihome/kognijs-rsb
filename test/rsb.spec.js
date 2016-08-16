@@ -70,7 +70,8 @@ describe('RSB', function() {
 
   it('should initialize a stubbed connection', function(done) {
     var rsb = new RSB();
-    rsb.connect(undefined, function(){
+    rsb.connect(undefined, function(err){
+      expect(err).to.be.an('undefined');
       expect(rsb.wsuri).to.be.equal('ws://localhost/ws');
       rsb = new RSB();
       rsb.connect('localhost:8181', function() {
@@ -91,7 +92,8 @@ describe('RSB', function() {
       this.onclose('unreachable', 'this is just a test');
     });
     var rsb = new RSB();
-    rsb.connect(undefined, function(){
+    rsb.connect(undefined, function(err){
+      expect(err).to.be.an('Error');
       expect(rsb.isConnected()).to.be.false;
       done()
     });
@@ -275,12 +277,9 @@ describe('RSB', function() {
         type: RSB.STRING,
         callback: function(err, res, inf) {
           inf.block = true;
-          console.log('foo');
           inf.publish('foo');
-          console.log('foo');
           expect('foo.bar' in wampMock.publishedMessages).to.be.false;
           expect(inf.block).to.be.false;
-          console.log('foo')
           rsb.createInformer({
             scope: "/foo/bar",
             type: 'rst.generic.Value',

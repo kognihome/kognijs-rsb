@@ -102,7 +102,7 @@ RSB.prototype.connect = function(url, callback) {
   this.connection.onclose = function (reason, details) {
     console.error("Connection lost: ", reason);
     if (reason == 'unreachable') {
-      callback();
+      callback(Error('Host unreachable'));
     }
   };
 
