@@ -144,7 +144,6 @@ describe('RSB', function() {
       rsb.createListener(params)
         .then(
           function(res) {
-            console.log(res);
             done(Error('createListener should reject since wampSession rejects'))},
           function(err) {
             return rsb.createListener(params);
@@ -297,6 +296,9 @@ describe('RSB', function() {
   })
 
   it('should not call listener callback due to wrong data', function(done){
+    var protoStub = this.sinon.stub(ProtoBuf, 'loadProtoFile', function(fp){
+      return ProtoBuf.loadProto(ValueProto);
+    });
     var rsb = new RSB();
     rsb.connect(undefined, function() {
       rsb.createListener({
@@ -315,7 +317,7 @@ describe('RSB', function() {
               done();
             }
           })
-        });
+        }, function(err) {done(err)});
     })
 
   });
