@@ -36,24 +36,23 @@ RSB.createProto = function(protoUrl) {
   var path = protoUrl.replace(/\./g,'/');
   var idx = path.lastIndexOf('/') + 1;
   var proto;
-  try {
-    var fp = {root:"/proto", file: path + ".proto"};
+  var fp = {root:"/proto", file: path + ".proto"};
 
-    proto = ProtoBuf.loadProtoFile(fp);
-    // RST proto files are provided in $prefix/share/rst$VERSION/proto
-    // in two separate folders named 'sandbox' and 'stable'.
+  proto = ProtoBuf.loadProtoFile(fp);
+  // RST proto files are provided in $prefix/share/rst$VERSION/proto
+  // in two separate folders named 'sandbox' and 'stable'.
+  if (! proto) {
+    var sandbox_fp = {root: fp.root + '/sandbox', file: fp.file};
+    proto = ProtoBuf.loadProtoFile(sandbox_fp);
     if (! proto) {
-      var sandbox_fp = {root: fp.root + '/sandbox', file: fp.file};
-      proto = ProtoBuf.loadProtoFile(sandbox_fp);
-      if (! proto) {
-        var stable_fp = {root: fp.root + '/stable', file: fp.file};
-        proto = ProtoBuf.loadProtoFile(stable_fp);
-      }
+      var stable_fp = {root: fp.root + '/stable', file: fp.file};
+      proto = ProtoBuf.loadProtoFile(stable_fp);
     }
-    proto = proto.build(protoUrl);
-  } catch(e) {
-    console.error('cannot load protofile', e);
   }
+  if (!proto) {
+    throw Error("Proto file " + protoUrl + " not found");
+  }
+  proto = proto.build(protoUrl);
   return proto;
 };
 
@@ -100,9 +99,10 @@ RSB.prototype.connect = function(url, callback) {
   var _this = this;
 
   this.connection.onclose = function (reason, details) {
-    console.error("Connection lost: ", reason);
     if (reason == 'unreachable') {
       callback(Error('Host unreachable'));
+    } else {
+      console.log('Connection lost', reason);
     }
   };
 
