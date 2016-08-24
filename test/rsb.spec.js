@@ -321,5 +321,15 @@ describe('RSB', function() {
     })
 
   });
+
+  it('should timeout if server does not answer', function(done) {
+    this.sinon.restore();
+    this.timeout(5000);
+    var rsb = new RSB();
+    rsb.connect('129.1.1.1:8181', function(err) {
+      console.log(err)
+      done();
+    });
+  });
 });
 

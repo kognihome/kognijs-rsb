@@ -72,6 +72,7 @@ RSB.getDefault = function(type) {
 };
 
 RSB.prototype.connect = function(url, callback) {
+  var callback_processed = false;
   if (url) {
     this.wsuri = "ws://" + url + "/ws";
   } else if (document.location.protocol == "file:") {
@@ -89,18 +90,31 @@ RSB.prototype.connect = function(url, callback) {
 
   var handle = this;
   this.connection.onopen = function (session, details) {
+    clearTimeout(timer);
     console.log("Connection established: ", details);
     handle.wamp = session;
     handle.wampSession = session;
     this.wasConnected = true;
-    callback();
+    if (! callback_processed) {
+      callback_processed = true;
+      callback();
+    }
   };
 
   var _this = this;
 
+  var timer = setTimeout(function () {
+    _this.connection.close();
+    _this.connection.onclose('unreachable', 'timeout');
+  }, 4000);
+
   this.connection.onclose = function (reason, details) {
+    clearTimeout(timer);
     if (reason == 'unreachable') {
-      callback(Error('Host unreachable'));
+      if (! callback_processed) {
+        callback_processed = true;
+        callback(Error('Host unreachable'));
+      }
     } else {
       console.log('Connection lost', reason);
     }
