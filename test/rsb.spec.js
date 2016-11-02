@@ -187,10 +187,10 @@ describe('RSB', function() {
 
   it('should return default values', function() {
     var idx = 0;
-    // return null first to simulate missing file at /proto
+    // return null two times to simulate missing file at /proto and /proto/sandbox
     var protoStub = this.sinon.stub(ProtoBuf, 'loadProtoFile', function(fp){
       console.log('CALLED')
-      if (idx < 1) {
+      if (idx < 2) {
         idx += 1;
         return null;
       }

@@ -34,11 +34,11 @@ RSB.SIMPLE_TYPES = [RSB.STRING, RSB.FLOAT, RSB.INTEGER, RSB.BOOL];
 
 RSB.createProto = function(protoUrl) {
   var proto = undefined;
-  try {
-    proto = require('./proto/'+protoUrl)
-  } catch(e) {
-    console.log('Proto Builder not packaged. Load .proto file instead.')
-  }
+  // try {
+  //   proto = require('./proto/'+protoUrl)
+  // } catch(e) {
+  //   console.log('Proto Builder not packaged. Load .proto file instead.')
+  // }
   if (!proto) {
     var path = protoUrl.replace(/\./g,'/');
     var fp = {root:"/proto", file: path + ".proto"};
