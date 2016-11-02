@@ -187,9 +187,10 @@ describe('RSB', function() {
 
   it('should return default values', function() {
     var idx = 0;
-    // return two times null to go through the branches
+    // return null first to simulate missing file at /proto
     var protoStub = this.sinon.stub(ProtoBuf, 'loadProtoFile', function(fp){
-      if (idx < 2) {
+      console.log('CALLED')
+      if (idx < 1) {
         idx += 1;
         return null;
       }
@@ -202,6 +203,7 @@ describe('RSB', function() {
     expect(RSB.getDefault('bool')).to.be.equal(false);
     expect(RSB.getDefault('rst.generic.Value')).to.have.property('type', null);
     expect(RSB.getDefault('rst.generic.Value')).to.have.property('string', null);
+    // for coverage, also use the /proto case
     idx = 1;
     expect(RSB.getDefault('rst.generic.Value')).to.have.property('bool', null);
     idx = -1;
@@ -314,7 +316,7 @@ describe('RSB', function() {
             type: RSB.STRING,
             callback: function(err, res, inf) {
               inf.publish('hello');
-              done();
+              setTimeout(function(){done()}, 20)
             }
           })
         }, function(err) {done(err)});
@@ -327,7 +329,7 @@ describe('RSB', function() {
     this.timeout(5000);
     var rsb = new RSB();
     rsb.connect('129.1.1.1:8181', function(err) {
-      console.log(err)
+      expect(err).to.be.an('Error');
       done();
     });
   });

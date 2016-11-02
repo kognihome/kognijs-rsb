@@ -133,18 +133,29 @@ ping
       });
 
       // publisher example
+      // window.pub = rsb.createInformer({
+      //   scope: "/rsb/web/tour/keyvaluepair",
+      //   type: "rst.generic.KeyValuePair",
+      //   callback: function() {
+      //     setInterval(function(){
+      //       window.pub.publish({
+      //         key:"foo",
+      //         value: {type: 4, string: 'bar'}
+      //       });
+      //     }, 1000);
+      //   }
+      // });
+
       window.pub = rsb.createInformer({
-        scope: "/rsb/web/tour/keyvaluepair",
-        type: "rst.generic.KeyValuePair",
+        scope: "/rsb/string",
+        type: "string",
         callback: function() {
           setInterval(function(){
-            window.pub.publish({
-              key:"foo",
-              value: {type: 4, string: 'bar'}
-            });
+            window.pub.publish("fößÏ");
           }, 1000);
         }
       });
+
       /// create ping pong
       rsb.createPingPong();
     })
