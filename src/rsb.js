@@ -33,18 +33,27 @@ RSB.SIMPLE_TYPES = [RSB.STRING, RSB.FLOAT, RSB.INTEGER, RSB.BOOL];
 
 
 RSB.createProto = function(protoUrl) {
-  console.log("URL", protoUrl)
-  var path = protoUrl.replace(/\./g,'/');
-  var idx = path.lastIndexOf('/') + 1;
-  var proto;
-  var fp = {root:"/proto", file: path + ".proto"};
+  var proto = undefined;
+  try {
+    proto = require('./proto/'+protoUrl)
+  } catch(e) {
+    console.log('Proto Builder not packaged. Load .proto file instead.')
+  }
+  if (!proto) {
+    var path = protoUrl.replace(/\./g,'/');
+    var fp = {root:"/proto", file: path + ".proto"};
 
-  proto = ProtoBuf.loadProtoFile(fp);
-  // RST proto files are provided in $prefix/share/rst$VERSION/proto
-  // in two separate folders named 'sandbox' and 'stable'.
-  if (! proto) {
-    var sandbox_fp = {paths: [fp.root + '/sandbox', fp.root + '/stable'], file: fp.file};
-    proto = ProtoBuf.loadProtoFile(sandbox_fp);
+    proto = ProtoBuf.loadProtoFile(fp);
+    // RST proto files are provided in $prefix/share/rst$VERSION/proto
+    // in two separate folders named 'sandbox' and 'stable'.
+    if (! proto) {
+      var sandbox_fp = {root: fp.root + '/sandbox', file: fp.file};
+      proto = ProtoBuf.loadProtoFile(sandbox_fp);
+      if (! proto) {
+        var stable_fp = {root: fp.root + '/stable', file: fp.file};
+        proto = ProtoBuf.loadProtoFile(stable_fp);
+      }
+    }
   }
   if (!proto) {
     throw Error("Proto file " + protoUrl + " not found");
