@@ -100,6 +100,11 @@ RSB.prototype.connect = function(url, callback) {
     console.log("Connection established: ", details);
     handle.wamp = session;
     handle.wampSession = session;
+    console.log("Reset previous subscriptions...");
+    var subs = session.subscriptions || [];
+    for (var i = 0; i < subs.length; ++i) {
+      this.wamp.unsubscribe(subs[i]);
+    }
     this.wasConnected = true;
     if (! callback_processed) {
       callback_processed = true;
@@ -143,7 +148,7 @@ RSB.prototype.createPingPong = function() {
 };
 
 // params scope; type; callback
-RSB.prototype.createListener = function createListener(params) {
+RSB.prototype.createListener = function(params) {
   if (! this.isConnected()) {
     throw Error('WAMP/RSB connection is not established!');
   }
@@ -151,7 +156,7 @@ RSB.prototype.createListener = function createListener(params) {
 
   var _this = this;
   return new Promise( function (resolve, reject) {
-    var wampScope = params.scope.substring(1,params.scope.length).replace(/\//g,'.');
+    var wampScope = params.scope.substring(1 ,params.scope.length).replace(/\//g,'.');
     var cb;
     if ((RSB.SIMPLE_TYPES.indexOf(params.type) == -1)) {
       var p = RSB.createProto(params.type);
@@ -220,7 +225,7 @@ function RSBInformer(params) {
 }
 
 // scope; type; callback
-RSB.prototype.createInformer = function createInformer(params) {
+RSB.prototype.createInformer = function(params) {
   if (! this.isConnected()) {
     throw Error('WAMP/RSB connection is not established!');
   }
@@ -238,4 +243,76 @@ RSB.prototype.isConnected = function() {
   return false;
 };
 
+// params array of (name, input, output)
+function RSBRemoteServer(wamp, scope) {
+  this.wamp = wamp;
+  this.scope = scope;
+}
+
+//params name, input, output
+RSBRemoteServer.prototype.addMethod = function(params){
+  var serialize;
+  if (RSB.SIMPLE_TYPES.indexOf(params.input) == -1) {
+    this.Proto = RSB.createProto(this.input);
+    serialize = function(msg) {
+      var m = (Object.getPrototypeOf(msg).hasOwnProperty('$type')) ? msg : new this.Proto(msg);
+      return ['\0' + m.encode64()];
+    };
+  } else {
+    serialize = function(msg) {
+      return [msg];
+    };
+  }
+
+  var deserialize;
+  if ((RSB.SIMPLE_TYPES.indexOf(params.output) == -1)) {
+    var p = RSB.createProto(params.output);
+    deserialize = function(args) {
+      try {
+        return p.decode64(args[0].substring(1));
+      } catch(err) {
+        console.log("Error on scope", wampScope, err)
+      }
+    }
+  } else {
+    deserialize = function(args) {
+      return args[0];
+    };
+  }
+
+  this[params.name] = function(arg) {
+    return new Promise(function (resolve, reject){
+      wamp.call('service.displayserver.call', scope, params.name, serialize(arg),
+                params.input, params.output)
+        .then(function(res) { resolve(deserialize(res)) })
+        .catch(function(err){ reject(err) })
+    });
+  }
+};
+
+RSB.prototype.createRemoteServer = function(scope) {
+  if (! this.isConnected()) {
+    throw Error('WAMP/RSB connection is not established!');
+  }
+  return new RSBRemoteServer(this.wamp, scope)
+};
+
 module.exports = RSB;
+
+// Helper function
+
+// http://benalman.com/news/2012/09/partial-application-in-javascript/
+function partial(fn /*, args...*/) {
+  var slice = Array.prototype.slice;
+  var args = slice.call(arguments, 1);
+  return function() {
+    return fn.apply(this, args.concat(slice.call(arguments, 0)));
+  };
+};
+
+var rpc = function(wamp) {
+  if (arguments.length > 4) {
+    throw Error("RSB RPC calls currently support only one payload argument.")
+  }
+  return wamp.call('service.displayserver.call', Array.prototype.slice.call(arguments, 1));
+};
