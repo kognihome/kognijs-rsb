@@ -25,7 +25,7 @@ function WampMock() {
   this.subscriptionResult.resolves('subscription stub');
 
   this.rpcStub = sinon.stub();
-  this.rpcStub.resolves('rpc stub');
+  this.rpcStub;
 
 }
 
@@ -50,6 +50,13 @@ WampMock.prototype.publish = function(scope, arr) {
 };
 
 WampMock.prototype.call = function(scope, args) {
+  if (scope.endsWith('call')) {
+    this.rpcStub.resolves(args[2]);
+  } else if (scope.endsWith('register')) {
+    this.rpcStub.resolves('registered')
+  } else {
+    thos.rpcStub.rejects('method not known');
+  }
   return this.rpcStub();
 };
 
@@ -185,6 +192,27 @@ describe('RSB', function() {
     });
   });
 
+  it('should createRemoteServer()', function(done) {
+    var rsb = new RSB();
+    var params = {name: 'echo', input: RSB.STRING, output: RSB.STRING};
+    expect(function() {rsb.createRemoteServer(params)}).to.throw(Error);
+
+    rsb.connect(undefined, function () {
+      var server = rsb.createRemoteServer('/foo/bar');
+      server.addMethod(params);
+      var i = 'hello';
+      var p = server.echo(i);
+      expect(p).to.be.a('Promise');
+      p.then(
+        function(o){
+          expect(o).to.be.equal(i);
+          done();
+        },
+        function(err){done(err);}
+      );
+    });
+  });
+
   it('should return default values', function() {
     var idx = 0;
     // return null two times to simulate missing file at /proto and /proto/sandbox
@@ -266,6 +294,49 @@ describe('RSB', function() {
     });
   });
 
+  it('should return a Value proto message', function (done) {
+    var protoStub = this.sinon.stub(ProtoBuf, 'loadProtoFile', function(fp){
+      return ProtoBuf.loadProto(ValueProto);
+    });
+    var rsb = new RSB();
+    rsb.connect(undefined, function(){
+      var server = rsb.createRemoteServer('/foo/bar')
+      server.addMethod({name:'echo', input:'rst.generic.Value', output: 'rst.generic.Value'})
+      server.echo({type: 4, string: 'hello'}).then(
+        function(res) {
+          expect(res.string).to.be.equal('hello');
+          done();
+        },
+        function(err) { done(err); }
+      )
+    });
+  });
+
+  it('should fail due to failed deserialization ', function (done) {
+    wampMock.rpcStub.onCall(0).resolves('not deserializable');
+    wampMock.rpcStub.onCall(1).rejects('cannot call');
+    var protoStub = this.sinon.stub(ProtoBuf, 'loadProtoFile', function(fp){
+      return ProtoBuf.loadProto(ValueProto);
+    });
+    var rsb = new RSB();
+    var value = {type: 4, string: 'hello'};
+    rsb.connect(undefined, function(){
+      var server = rsb.createRemoteServer('/foo/bar');
+      server.addMethod({name:'echo', input:'rst.generic.Value', output: 'rst.generic.Value'})
+      server.echo(value).then(
+        function(res) {
+          done(Error('Message should not be deserializable'));
+        },
+        function(err) {
+          server.echo(value).then(
+            function (res) {done(Error('call should be rejected'))},
+            function (err) {done()})
+        }
+      )
+    });
+  });
+
+
   it('should block publishing', function(done) {
     var protoStub = this.sinon.stub(ProtoBuf, 'loadProtoFile', function(fp){
       return ProtoBuf.loadProto(ValueProto);
@@ -325,11 +396,37 @@ describe('RSB', function() {
 
   it('should timeout if server does not answer', function(done) {
     this.sinon.restore();
+    this.sinon.stub(autobahn.Connection.prototype, 'open', function(){
+      // do nothing when connection is opened
+    });
+    var closeStup = sinon.stub();
+    this.sinon.stub(autobahn.Connection.prototype, 'close', function(){
+      closeStup();
+    });
+
     this.timeout(5000);
     var rsb = new RSB();
     rsb.connect('129.1.1.1:8181', function(err) {
       expect(err).to.be.an('Error');
+      expect(closeStup.called).to.be.true;
       done();
     });
   });
+
+  // it('it should timeout connection', function(done) {
+  //   openStub.restore();
+  //   var closeStup = sinon.stub();
+  //
+  //
+  //   this.sinon.stub(autobahn.Connection.prototype, 'close', function(){
+  //     closeStup();
+  //   });
+  //   var rsb = new RSB();
+  //   rsb.connect(undefined, function(err){
+  //     expect(err).to.be.an('Error');
+  //     expect(rsb.isConnected()).to.be.false;
+  //     done()
+  //   });
+  // });
+
 });

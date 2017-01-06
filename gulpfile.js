@@ -22,7 +22,7 @@ gulp.task('serve', ['build-vendor', 'build-tour', 'browser-sync'], function () {
   gulp.watch('examples/*.html', reload);
 });
 
-gulp.task('build-redist', function() {
+gulp.task('build-redist', ['test'], function() {
   return browserify([
         'src/rsb.js',
         'src/main.js'
@@ -66,7 +66,7 @@ gulp.task('build-vendor', function () {
   return stream;
 });
 
-gulp.task('build-tour', function () {
+gulp.task('build-tour', ['test'], function () {
 
   var b = browserify([
       'src/rsb.js',

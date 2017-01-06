@@ -253,39 +253,44 @@ function RSBRemoteServer(wamp, scope) {
 RSBRemoteServer.prototype.addMethod = function(params){
   var serialize;
   if (RSB.SIMPLE_TYPES.indexOf(params.input) == -1) {
-    this.Proto = RSB.createProto(this.input);
+    var Proto = RSB.createProto(params.input);
     serialize = function(msg) {
-      var m = (Object.getPrototypeOf(msg).hasOwnProperty('$type')) ? msg : new this.Proto(msg);
-      return ['\0' + m.encode64()];
+      var m = (Object.getPrototypeOf(msg).hasOwnProperty('$type')) ? msg : new Proto(msg);
+      return '\0' + m.encode64();
     };
   } else {
     serialize = function(msg) {
-      return [msg];
+      return msg;
     };
   }
 
   var deserialize;
   if ((RSB.SIMPLE_TYPES.indexOf(params.output) == -1)) {
-    var p = RSB.createProto(params.output);
+    var Proto = RSB.createProto(params.output);
     deserialize = function(args) {
-      try {
-        return p.decode64(args[0].substring(1));
-      } catch(err) {
-        console.log("Error on scope", wampScope, err)
-      }
+      return Proto.decode64(args.substring(1));
     }
   } else {
     deserialize = function(args) {
-      return args[0];
+      return args;
     };
   }
 
+  var wamp = this.wamp;
+  var scope = this.scope;
   this[params.name] = function(arg) {
     return new Promise(function (resolve, reject){
-      wamp.call('service.displayserver.call', scope, params.name, serialize(arg),
-                params.input, params.output)
-        .then(function(res) { resolve(deserialize(res)) })
-        .catch(function(err){ reject(err) })
+      wamp.call('service.displayserver.call', [scope, params.name, serialize(arg),
+                params.input, params.output])
+        .then(function(res) {
+          try {
+            var message = deserialize(res);
+            resolve(message);
+          } catch(err) {
+            reject(err);
+          }
+        })
+        .catch(function(err){ reject(err); })
     });
   }
 };
@@ -298,21 +303,3 @@ RSB.prototype.createRemoteServer = function(scope) {
 };
 
 module.exports = RSB;
-
-// Helper function
-
-// http://benalman.com/news/2012/09/partial-application-in-javascript/
-function partial(fn /*, args...*/) {
-  var slice = Array.prototype.slice;
-  var args = slice.call(arguments, 1);
-  return function() {
-    return fn.apply(this, args.concat(slice.call(arguments, 0)));
-  };
-};
-
-var rpc = function(wamp) {
-  if (arguments.length > 4) {
-    throw Error("RSB RPC calls currently support only one payload argument.")
-  }
-  return wamp.call('service.displayserver.call', Array.prototype.slice.call(arguments, 1));
-};

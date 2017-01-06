@@ -7,8 +7,8 @@
     "src/rsb.js"
   ],
   "dependencies": {
-    "autobahn": "<0.13.0",
-    "protobufjs": "*"
+    "autobahn": "*",
+    "protobufjs": "<6.0"
   },
   "devDependencies": {
     "browser-sync": "*",
