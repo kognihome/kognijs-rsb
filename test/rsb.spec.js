@@ -195,7 +195,7 @@ describe('RSB', function() {
   it('should createRemoteServer()', function(done) {
     var rsb = new RSB();
     var params = {name: 'echo', input: RSB.STRING, output: RSB.STRING};
-    expect(function() {rsb.createRemoteServer(params)}).to.throw(Error);
+    expect(function() {rsb.createRemoteServer('/foo/bar')}).to.throw(Error);
 
     rsb.connect(undefined, function () {
       var server = rsb.createRemoteServer('/foo/bar');
