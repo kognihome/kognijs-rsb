@@ -253,9 +253,9 @@ function RSBRemoteServer(wamp, scope) {
 RSBRemoteServer.prototype.addMethod = function(params){
   var serialize;
   if (RSB.SIMPLE_TYPES.indexOf(params.input) == -1) {
-    var Proto = RSB.createProto(params.input);
+    var ProtoInput = RSB.createProto(params.input);
     serialize = function(msg) {
-      var m = (Object.getPrototypeOf(msg).hasOwnProperty('$type')) ? msg : new Proto(msg);
+      var m = (Object.getPrototypeOf(msg).hasOwnProperty('$type')) ? msg : new ProtoInput(msg);
       return '\0' + m.encode64();
     };
   } else {
@@ -266,9 +266,9 @@ RSBRemoteServer.prototype.addMethod = function(params){
 
   var deserialize;
   if ((RSB.SIMPLE_TYPES.indexOf(params.output) == -1)) {
-    var Proto = RSB.createProto(params.output);
+    var ProtoOutput = RSB.createProto(params.output);
     deserialize = function(args) {
-      return Proto.decode64(args.substring(1));
+      return ProtoOutput.decode64(args.substring(1));
     }
   } else {
     deserialize = function(args) {
