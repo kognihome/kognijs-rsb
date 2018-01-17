@@ -22,7 +22,7 @@ gulp.task('serve', ['build-vendor', 'build-tour', 'browser-sync'], function () {
   gulp.watch('examples/*.html', reload);
 });
 
-gulp.task('build-redist', ['test'], function() {
+gulp.task('build-redist-minified', ['test'], function() {
   return browserify([
         'src/rsb.js',
         'src/main.js'
@@ -33,6 +33,19 @@ gulp.task('build-redist', ['test'], function() {
       .pipe(source('kognijs.rsb.min.js'))
       .pipe(buffer())
       .pipe(uglify())
+      .pipe(gulp.dest('redist/'));
+});
+
+gulp.task('build-redist', ['test', 'build-redist-minified'], function() {
+  return browserify([
+        'src/rsb.js',
+        'src/main.js'
+      ],  {
+        debug: !production,
+      })
+      .bundle()
+      .pipe(source('kognijs.rsb.js'))
+      .pipe(buffer())
       .pipe(gulp.dest('redist/'));
 });
 
