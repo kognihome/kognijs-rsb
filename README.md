@@ -4,7 +4,7 @@ Wraps the Web Application Messaging Protocol ([WAMP](http://wamp-proto.org/)) an
 web version of the Robotic Service Bus ([RSB](https://code.cor-lab.org/projects/rsb)). WAMP is kindly provided by
 [autobahn](http://autobahn.ws/) and Protocol Buffers are provided by [protobuf.js](https://github.com/dcodeIO/ProtoBuf.js/).
 
-This module is part of the [KogniJS]((https://travis-ci.org/aleneum/kognijs) framework.
+This module is part of the [KogniJS](https://github.com/aleneum/kognijs)framework.
 It is developed within the [KogniHome](https://kogni-home.de/) project to help developers to 
 create tailored and flexible interfaces for smart home environments.
 
