@@ -40,7 +40,7 @@ bower install kognijs-rsb
 You can include kognijs-rsb directly in your HTML file:
 
 ```html
-<script src="https://cdn.rawgit.com/aleneum/kognijs-rsb/v0.2.1/redist/kognijs.rsb.min.js">
+<script src="https://cdn.rawgit.com/aleneum/kognijs-rsb/v0.2.1/redist/kognijs.rsb.min.js"></script>
 ```
 
 The `RSB` object resides in the *KogniJS* namespace:
