@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -6,17 +7,49 @@
   <title>Kogni.JS - RSB</title>
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="../redist/kognijs.rsb-0.1.0.min.js"></script>
+  <script src="https://cdn.rawgit.com/aleneum/kognijs-rsb/master/redist/kognijs.rsb.js"></script>
 </head>
+
 <script type="text/javascript">
-  window.onload = function() {
-    window.rsb = new KogniJS.RSB();
-    rsb.connect('localhost:8181', function() {
-      console.log('connected!');
-    });
-  }
-</script>
+    window.onload = function() {
+      window.rsb = new KogniJS.RSB();
+      rsb.connect('localhost:8181', function() {
+        console.log("connected!")
+
+        rsb.createListener({
+          scope: "/rsb/web/tour/string",
+          type: KogniJS.RSB.STRING,
+          callback: function(value) {
+            console.log("Received value:", value)
+          }
+        });
+
+        var proto_pub = rsb.createInformer({
+          scope: "/rsb/web/tour/keyvaluepair",
+          type: "rst.generic.KeyValuePair",
+          callback: function() {
+            setInterval(function(){
+              proto_pub.publish({key: 'foo', value: {type: 4, string: 'bar'}});
+            }, 3000);
+          }
+        });
+
+        window.simple_pub = rsb.createInformer({
+          scope: "/rsb/string",
+          type: "string"
+        });
+
+      });
+    }
+
+    function onButtonClicked() {
+        simple_pub.publish("Button Clicked");
+    }
+  </script>
+
+
 <body>
   <h1>This is just a test page</h1>
+  <button onclick="onButtonClicked()">Click me</button>
 </body>
 </html>
