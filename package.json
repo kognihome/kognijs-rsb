@@ -1,11 +1,21 @@
 {
   "name": "kognijs-rsb",
   "version": "0.2.1",
-  "description": "KogniHome Web Toolkit",
+  "description": "KogniHome Web Toolkit RSB module",
+  "author": "Alexander Neumann",
+  "repository": "https://github.com/aleneum/kognijs",
+  "license": "MIT",
   "main": "src/rsb.js",
   "files": [
     "src/rsb.js"
   ],
+  "scripts": {
+    "build": "gulp build-redist",
+    "dev": "gulp serve",
+    "test": "mocha",
+    "cov": "nyc --reporter=lcov --reporter=text-summary --temp-dir=./coverage npm test",
+    "travis": "nyc npm test && nyc report --reporter=text-lcov | coveralls"
+  },
   "dependencies": {
     "autobahn": "*",
     "protobufjs": "<6.0"
@@ -13,20 +23,17 @@
   "devDependencies": {
     "browser-sync": "*",
     "browserify": "*",
-    "lodash": "*",
-    "gulp": "*",
-    "gulp-uglify": "*",
-    "resolve": "*",
-    "vinyl-source-stream": "*",
-    "vinyl-buffer": "*",
-    "mocha": "*",
     "chai": "*",
+    "coveralls": "*",
+    "gulp": "^4.0.0",
+    "gulp-uglify": "*",
+    "lodash": "*",
+    "nyc": "*",
+    "mocha": "*",
+    "resolve": "*",
     "sinon": "*",
     "sinon-chai": "*",
-    "gulp-mocha": "*",
-    "gulp-istanbul": "*",
-    "istanbul": "*",
-    "sinon-as-promised": "*",
-    "gulp-coveralls": "*"
+    "vinyl-buffer": "*",
+    "vinyl-source-stream": "*"
   }
 }

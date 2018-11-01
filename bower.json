@@ -1,9 +1,9 @@
 {
   "name": "kognijs-rsb",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "KogniHome Web Toolkit",
   "main": [
-      "redist/kognijs.rsb.min.js"
+      "redist/kognijs.rsb.js"
   ],
   "ignore": [
     "node_modules",

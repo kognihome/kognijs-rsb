@@ -3,7 +3,6 @@ var chai = require("chai");
 var expect = require('chai').expect;
 var sinon = require("sinon");
 var sinonChai = require("sinon-chai");
-var sinonAsPromised = require('sinon-as-promised');
 var RSB = require('../src/rsb');
 var ProtoBuf = require('protobufjs');
 var autobahn = require('autobahn');
@@ -64,9 +63,9 @@ WampMock.prototype.call = function(scope, args) {
 describe('RSB', function() {
   beforeEach(function () {
     global.document = {location: {protocol: "http:", host:'localhost'}};
-    this.sinon = sinon.sandbox.create();
+    this.sinon = sinon.createSandbox();
     wampMock = new WampMock();
-    openStub = this.sinon.stub(autobahn.Connection.prototype, 'open', function(){
+    openStub = this.sinon.stub(autobahn.Connection.prototype, 'open').callsFake(function(){
       this.onopen(wampMock, 'connection stub');
     });
   });
@@ -95,7 +94,7 @@ describe('RSB', function() {
 
   it('it should silently accept unreachable', function(done) {
     openStub.restore();
-    this.sinon.stub(autobahn.Connection.prototype, 'open', function(){
+    this.sinon.stub(autobahn.Connection.prototype, 'open').callsFake(function(){
       this.onclose('unreachable', 'this is just a test');
     });
     var rsb = new RSB();
@@ -216,7 +215,7 @@ describe('RSB', function() {
   it('should return default values', function() {
     var idx = 0;
     // return null two times to simulate missing file at /proto and /proto/sandbox
-    var protoStub = this.sinon.stub(ProtoBuf, 'loadProtoFile', function(fp){
+    var protoStub = this.sinon.stub(ProtoBuf, 'loadProtoFile').callsFake(function(fp){
       if (idx < 2) {
         idx += 1;
         return null;
@@ -265,7 +264,7 @@ describe('RSB', function() {
   });
 
   it('should receive a Value proto message', function (done) {
-    var protoStub = this.sinon.stub(ProtoBuf, 'loadProtoFile', function(fp){
+    var protoStub = this.sinon.stub(ProtoBuf, 'loadProtoFile').callsFake(function(fp){
       return ProtoBuf.loadProto(ValueProto);
     });
     var rsb = new RSB();
@@ -295,7 +294,7 @@ describe('RSB', function() {
   });
 
   it('should return a Value proto message', function (done) {
-    var protoStub = this.sinon.stub(ProtoBuf, 'loadProtoFile', function(fp){
+    var protoStub = this.sinon.stub(ProtoBuf, 'loadProtoFile').callsFake(function(fp){
       return ProtoBuf.loadProto(ValueProto);
     });
     var rsb = new RSB();
@@ -315,7 +314,7 @@ describe('RSB', function() {
   it('should fail due to failed deserialization ', function (done) {
     wampMock.rpcStub.onCall(0).resolves('not deserializable');
     wampMock.rpcStub.onCall(1).rejects('cannot call');
-    var protoStub = this.sinon.stub(ProtoBuf, 'loadProtoFile', function(fp){
+    var protoStub = this.sinon.stub(ProtoBuf, 'loadProtoFile').callsFake(function(fp){
       return ProtoBuf.loadProto(ValueProto);
     });
     var rsb = new RSB();
@@ -338,7 +337,7 @@ describe('RSB', function() {
 
 
   it('should block publishing', function(done) {
-    var protoStub = this.sinon.stub(ProtoBuf, 'loadProtoFile', function(fp){
+    var protoStub = this.sinon.stub(ProtoBuf, 'loadProtoFile').callsFake(function(fp){
       return ProtoBuf.loadProto(ValueProto);
     });
     var rsb = new RSB();
@@ -368,7 +367,7 @@ describe('RSB', function() {
   })
 
   it('should not call listener callback due to wrong data', function(done){
-    var protoStub = this.sinon.stub(ProtoBuf, 'loadProtoFile', function(fp){
+    var protoStub = this.sinon.stub(ProtoBuf, 'loadProtoFile').callsFake(function(fp){
       return ProtoBuf.loadProto(ValueProto);
     });
     var rsb = new RSB();
@@ -396,30 +395,30 @@ describe('RSB', function() {
 
   it('should timeout if server does not answer', function(done) {
     this.sinon.restore();
-    this.sinon.stub(autobahn.Connection.prototype, 'open', function(){
+    this.sinon.stub(autobahn.Connection.prototype, 'open').callsFake(function(){
       // do nothing when connection is opened
     });
-    var closeStup = sinon.stub();
-    this.sinon.stub(autobahn.Connection.prototype, 'close', function(){
-      closeStup();
+    var closeStub = sinon.stub();
+    this.sinon.stub(autobahn.Connection.prototype, 'close').callsFake(function(){
+      closeStub();
     });
 
     this.timeout(5000);
     var rsb = new RSB();
     rsb.connect('129.1.1.1:8181', function(err) {
       expect(err).to.be.an('Error');
-      expect(closeStup.called).to.be.true;
+      expect(closeStub.called).to.be.true;
       done();
     });
   });
 
   // it('it should timeout connection', function(done) {
   //   openStub.restore();
-  //   var closeStup = sinon.stub();
+  //   var closeStub = sinon.stub();
   //
   //
   //   this.sinon.stub(autobahn.Connection.prototype, 'close', function(){
-  //     closeStup();
+  //     closeStub();
   //   });
   //   var rsb = new RSB();
   //   rsb.connect(undefined, function(err){

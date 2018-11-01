@@ -8,46 +8,9 @@ var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var nodeResolve = require('resolve');
 var browserSync = require('browser-sync');
-var mocha = require('gulp-mocha');
 var reload = browserSync.reload;
-var istanbul = require('gulp-istanbul');
-var coveralls = require('gulp-coveralls');
 
 var production = (process.env.NODE_ENV === 'production');
-
-gulp.task('default', ['serve']);
-
-gulp.task('serve', ['build-vendor', 'build-tour', 'browser-sync'], function () {
-  gulp.watch('src/**/*.js', ['build-tour', reload]);
-  gulp.watch('examples/*.html', reload);
-});
-
-gulp.task('build-redist-minified', ['test'], function() {
-  return browserify([
-        'src/rsb.js',
-        'src/main.js'
-      ],  {
-        debug: !production,
-      })
-      .bundle()
-      .pipe(source('kognijs.rsb.min.js'))
-      .pipe(buffer())
-      .pipe(uglify())
-      .pipe(gulp.dest('redist/'));
-});
-
-gulp.task('build-redist', ['test', 'build-redist-minified'], function() {
-  return browserify([
-        'src/rsb.js',
-        'src/main.js'
-      ],  {
-        debug: !production,
-      })
-      .bundle()
-      .pipe(source('kognijs.rsb.js'))
-      .pipe(buffer())
-      .pipe(gulp.dest('redist/'));
-});
 
 gulp.task('browser-sync', function() {
   browserSync({
@@ -79,7 +42,34 @@ gulp.task('build-vendor', function () {
   return stream;
 });
 
-gulp.task('build-tour', ['test'], function () {
+gulp.task('build-redist-minified', gulp.series('test', function() {
+  return browserify([
+        'src/rsb.js',
+        'src/main.js'
+      ],  {
+        debug: !production,
+      })
+      .bundle()
+      .pipe(source('kognijs.rsb.min.js'))
+      .pipe(buffer())
+      .pipe(uglify())
+      .pipe(gulp.dest('redist/'));
+}));
+
+gulp.task('build-redist', gulp.series('build-redist-minified', function() {
+  return browserify([
+        'src/rsb.js',
+        'src/main.js'
+      ],  {
+        debug: !production,
+      })
+      .bundle()
+      .pipe(source('kognijs.rsb.js'))
+      .pipe(buffer())
+      .pipe(gulp.dest('redist/'));
+}));
+
+gulp.task('build-tour', gulp.series('test', function () {
 
   var b = browserify([
       'src/rsb.js',
@@ -96,29 +86,15 @@ gulp.task('build-tour', ['test'], function () {
   stream.pipe(gulp.dest('./dist'));
 
   return stream;
-});
+}));
 
-gulp.task('pre-test', function () {
-  return gulp.src(['src/**/*.js'])
-    .pipe(istanbul({
-      dir: './coverage',
-      reporters: [ 'lcov', 'text-summary' ],
-      reportOpts: { dir: './coverage' },
-    }))
-    .pipe(istanbul.hookRequire());
-});
 
-gulp.task('test', ['pre-test'], function () {
-    return gulp.src(['test/**/*.spec.js'], { read: false })
-      .pipe(mocha({ reporter: 'spec' }))
-      .pipe(istanbul.writeReports())
-});
+gulp.task('serve', gulp.series('build-vendor', 'build-tour', 'browser-sync', function () {
+  gulp.watch('src/**/*.js', ['build-tour', reload]);
+  gulp.watch('examples/*.html', reload);
+}));
 
-gulp.task('test-travis', ['test'], function(){
-  return gulp.src('coverage/**/lcov.info')
-  .pipe(coveralls());
-});
-
+gulp.task('default', gulp.parallel('serve'));
 
 function getNPMPackageIds() {
   var packageManifest = {};
