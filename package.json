@@ -10,7 +10,7 @@
     "src/rsb.js"
   ],
   "scripts": {
-    "build": "gulp build-redist",
+    "build": "npm test && gulp build-redist",
     "dev": "gulp serve",
     "test": "mocha",
     "cov": "nyc --reporter=lcov --reporter=text-summary --temp-dir=./coverage npm test",

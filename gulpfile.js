@@ -42,7 +42,7 @@ gulp.task('build-vendor', function () {
   return stream;
 });
 
-gulp.task('build-redist-minified', gulp.series('test', function() {
+gulp.task('build-redist-minified', function() {
   return browserify([
         'src/rsb.js',
         'src/main.js'
@@ -54,7 +54,7 @@ gulp.task('build-redist-minified', gulp.series('test', function() {
       .pipe(buffer())
       .pipe(uglify())
       .pipe(gulp.dest('redist/'));
-}));
+});
 
 gulp.task('build-redist', gulp.series('build-redist-minified', function() {
   return browserify([
@@ -69,7 +69,7 @@ gulp.task('build-redist', gulp.series('build-redist-minified', function() {
       .pipe(gulp.dest('redist/'));
 }));
 
-gulp.task('build-tour', gulp.series('test', function () {
+gulp.task('build-tour', function () {
 
   var b = browserify([
       'src/rsb.js',
@@ -86,7 +86,7 @@ gulp.task('build-tour', gulp.series('test', function () {
   stream.pipe(gulp.dest('./dist'));
 
   return stream;
-}));
+});
 
 
 gulp.task('serve', gulp.series('build-vendor', 'build-tour', 'browser-sync', function () {
