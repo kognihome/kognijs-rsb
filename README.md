@@ -125,9 +125,8 @@ An interactive demo can be started with npm and gulp:
 ```bash
 git clone https://github.com/aleneum/kognijs-rsb.git kognijs-rsb
 cd kognijs-rsb
-npm install -g gulp # if you havent done already
-npm install
-gulp serve
+npm ci  # install package versions found in package-lock
+npm run dev  # runs gulp test server
 ```
 
 A browser window should open to `localhost:3000` with an interactive tour.
