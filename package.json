@@ -1,9 +1,9 @@
 {
   "name": "kognijs-rsb",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "KogniHome Web Toolkit RSB module",
   "author": "Alexander Neumann",
-  "repository": "https://github.com/aleneum/kognijs",
+  "repository": "https://github.com/kognihome/kognijs-rsb",
   "license": "MIT",
   "main": "src/rsb.js",
   "files": [

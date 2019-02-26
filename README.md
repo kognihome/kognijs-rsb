@@ -132,3 +132,6 @@ npm run dev  # runs gulp test server
 A browser window should open to `localhost:3000` with an interactive tour.
 This demo requires a running [kogniserver](https://github.com/aleneum/kogniserver) instance.
 
+## Acknowledgements
+
+The development of this software was supported through project grants [KogniHome](kogni-home.de) (German Federal Ministry of Education and Research (BMBF) grant no. 16SV7054K) at Bielefeld University.
